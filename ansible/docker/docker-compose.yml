@@ -1,0 +1,55 @@
+version: '3.8'
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.1
+    container_name: es
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - deception_net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.1
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - deception_net
+
+  cowrie:
+    image: cowrie/cowrie:latest
+    container_name: cowrie
+    restart: unless-stopped
+    volumes:
+      - ./cowrie/data:/cowrie/data
+    networks:
+      - deception_net
+
+  # Caldera placeholder - does not run attack playbooks by itself.
+  caldera:
+    image: mitre/caldera:4.3.0
+    container_name: caldera
+    environment:
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=admin
+    ports:
+      - "8888:8888"
+    networks:
+      - deception_net
+
+volumes:
+  esdata:
+
+networks:
+  deception_net:
+    driver: bridge
