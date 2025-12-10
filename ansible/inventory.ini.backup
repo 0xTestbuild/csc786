@@ -1,0 +1,7 @@
+[lab_hosts]
+host1 ansible_host=192.168.53.3 ansible_user=ubuntu
+host2 ansible_host=192.168.53.4 ansible_user=ubuntu
+bastion ansible_host=192.168.53.5 ansible_user=ubuntu
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3

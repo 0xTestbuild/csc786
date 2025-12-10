@@ -1,0 +1,38 @@
+---
+- name: Prepare OSBoxes VMs
+  hosts: lab_hosts
+  become: true
+  become_user: root
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install Python and Docker
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - docker.io
+          - docker-compose
+        state: present
+
+    - name: Ensure docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add osboxes user to docker group
+      user:
+        name: osboxes
+        groups: docker
+        append: yes
+
+    - name: Create deception lab directory
+      file:
+        path: /home/osboxes/deception_lab
+        state: directory
+        owner: osboxes
+        mode: '0755'

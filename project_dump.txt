@@ -1,0 +1,2639 @@
+FILE START: ./crawl.py
+import os
+
+output_file = "project_dump.txt"
+root_folder = "./"
+
+with open(output_file, "w", encoding="utf8") as out:
+    for folder, subfolders, files in os.walk(root_folder):
+        for name in files:
+            path = os.path.join(folder, name)
+            try:
+                with open(path, "r", encoding="utf8") as f:
+                    out.write(f"FILE START: {path}\n")
+                    out.write(f.read())
+                    out.write("\n\nFILE END\n\n")
+            except Exception as e:
+                out.write(f"FILE START: {path}\n")
+                out.write("Could not read this file.\n\nFILE END\n\n")
+
+print("Finished gathering files.")
+
+
+FILE END
+
+FILE START: ./ETHICS.md
+# ETHICS.md
+
+## Purpose
+This document outlines the ethical guidelines followed during the Red Team Lab project. The goal is to ensure all activities are conducted responsibly and in accordance with professional and academic standards.
+
+## Scope
+The project involves simulated offensive security exercises, penetration testing techniques, and controlled malware/worm demonstrations in a closed lab environment. No live systems, external networks, or unauthorized targets were used.
+
+## Guidelines Followed
+- All testing was performed on isolated lab machines and virtual environments.
+- No real user data or sensitive personal information was accessed or stored.
+- Malware, worms, or exploits created were strictly for educational purposes and were not deployed outside the lab.
+- The project follows responsible disclosure principles; no vulnerabilities were exploited on external systems.
+- All activities were conducted in compliance with Dakota State University’s cybersecurity research policies and applicable laws.
+
+## Responsible Use
+Users of this project should:
+- Only run the code in isolated, controlled environments.
+- Avoid deploying any scripts or exploits on live networks without proper authorization.
+- Respect all ethical and legal requirements when reproducing the workflow.
+
+
+
+FILE END
+
+FILE START: ./.DS_Store
+FILE START: ./.DS_Store
+Could not read this file.
+
+FILE END
+
+FILE START: ./DATA_README.md
+# DATA_README.md
+
+## Project Dataset Overview
+The Red Team Lab project does not use external datasets. All data generated or used is simulated within the lab environment for educational purposes.
+
+## Generated Data
+- **Logs:** All logs generated during testing (e.g., exploit attempts, network scans) are stored locally in the lab environment.
+- **Output Files:** Results of scripts, simulations, or testing exercises are saved in the repository under structured folders.
+
+## Parameters and Configuration
+- Virtual machines were configured with controlled IP addresses and services for testing purposes.
+- Script parameters (e.g., scanning ranges, simulated targets) are fully documented within the notebook and code comments.
+
+## Ethics and Handling
+- No real network data, credentials, or personal information were collected.
+- All generated data is for educational/research purposes only.
+- Users replicating the workflow should maintain isolation and avoid using real-world targets.
+
+
+
+FILE END
+
+FILE START: ./README.md
+# Deception-Enhanced Red Team Training Lab (Starter Repo)
+
+**Author:** Darold Kelly Jr.  
+**Purpose:** Practical-pathway starter code for Assignment 4 (CSC786). This repository provides orchestration, a deception controller skeleton, and evaluation scripts for a small, isolated cyber range (2 Windows hosts + 1 Linux bastion in the design).
+
+**Important safety note:** This code is intended for **isolated, offline lab environments only**. Do NOT deploy services (honeypots, emulators, or attack tooling) on public networks. Obtain necessary approvals before running exercises with human participants.
+
+## Contents
+- `ansible/` - Ansible inventory and playbook to provision lab hosts (installs Docker & Docker Compose).
+- `docker/` - `docker-compose.yml` to run honeypot (Cowrie), ELK logging stack (Elasticsearch + Kibana), and a Caldera placeholder.
+- `deception_controller/` - Python skeleton that monitors logs and rotates honeytokens.
+- `scoring/` - Scripts to compute basic detection metrics (detection accuracy, MTTD).
+- `scripts/` - helper and setup scripts.
+- `.gitignore`
+
+## Quickstart (high-level)
+1. Ensure a fully isolated virtual network with no route to the public internet.
+2. Place host IPs in `ansible/inventory.ini`.
+3. From a control host with Ansible: `ansible-playbook -i ansible/inventory.ini ansible/site.yml`
+4. On one lab host or control VM, `cd docker` and run `docker compose up -d` to start the logging stack & honeypot.
+5. Update `DECEPTION_BASE` environment variable if you want a custom install location (defaults to `~/deception_lab`).
+6. Run the deception controller: `python3 deception_controller/deception_controller.py`
+7. Run red-team exercises inside the isolated lab (e.g., Caldera or manual tests). **DO NOT** enable external access.
+8. Use `scoring/scoring.py` to compute MTTD and other simple metrics.
+
+## Safety & Ethics
+- Keep lab networks isolated.
+- Obtain participant consent and anonymize logs.
+- Do not use real credentials or sensitive data in honeytokens.
+- The repository intentionally omits offensive payloads and automated attack playbooks.
+
+## Contact
+If you want extensions (Caldera API scaffolding, ML-driven deception policies, or ingestion to ELK), tell me which and I will add safe scaffolding.
+# csc786
+
+
+FILE END
+
+FILE START: ./project_dump.txt
+
+
+FILE END
+
+FILE START: ./init.py
+# Retrying creation of the starter repository for the Deception-Enhanced Red Team Training Lab.
+import os, textwrap, json, stat, shutil
+
+base_dir = "/mnt/data/deception_cyberlab"
+if os.path.exists(base_dir):
+    shutil.rmtree(base_dir)
+os.makedirs(base_dir, exist_ok=True)
+
+# README.md
+readme = textwrap.dedent("""\
+# Deception-Enhanced Red Team Training Lab (Starter Repo)
+
+**Author:** Darold Kelly Jr.
+**Purpose:** Practical-pathway starter code for Assignment 4 (CSC786). This repository provides orchestration, deception controller skeleton, and evaluation scripts for a small, isolated cyber range (2 Windows hosts + 1 Linux bastion in the design).
+
+**Important safety note:** This code is intended for **isolated, offline lab environments only**. Do NOT deploy services (honeypots, emulators, or attack tooling) on public networks. Obtain necessary approvals before running exercises with human participants.
+
+## Contents
+- `ansible/` - Ansible inventory and playbook to provision lab hosts (installs Docker & Docker Compose).
+- `docker/` - `docker-compose.yml` to run honeypot (Cowrie), ELK logging stack (Elasticsearch + Kibana + Logstash) for collection, and a placeholder for Caldera (adversary emulation) if desired.
+- `deception_controller/` - Python skeleton that monitors logs and updates deception artifacts (honeytokens).
+- `scoring/` - Scripts to compute detection metrics (detection accuracy, MTTD) from collected logs.
+- `scripts/setup_env.sh` - Helper shell script to prepare a single Ubuntu host for Ansible control and Docker usage.
+
+## How to use (high-level)
+1. Ensure a fully isolated virtual network (no route to the public internet).
+2. Provision VMs (Ubuntu 22.04 recommended) and populate `ansible/inventory.ini` with their IPs.
+3. Run the Ansible playbook: `ansible-playbook -i ansible/inventory.ini ansible/site.yml`
+4. SSH into the orchestrator / control host and `cd docker` then `docker compose up -d` to start services.
+5. Start the deception controller: `python3 deception_controller/deception_controller.py` (requires Python 3.9+)
+6. Use Caldera or your red team tooling within the isolated lab to run simulated attacks. **Do not** share attack payloads or enable external access.
+7. Use `scoring/scoring.py` to parse logs and compute metrics after sessions.
+
+## Ethical & Safety
+- This lab must remain isolated.
+- Participant consent, anonymization, and IRB approvals (if applicable) must be obtained.
+- The deception controller intentionally contains placeholders for adaptive logic so you can implement policies safely.
+
+""")
+
+with open(os.path.join(base_dir, "README.md"), "w") as f:
+    f.write(readme)
+
+# ansible files
+os.makedirs(os.path.join(base_dir, "ansible"), exist_ok=True)
+inventory = textwrap.dedent("""\
+[lab_hosts]
+host1 ansible_host=10.0.50.11 ansible_user=ubuntu
+host2 ansible_host=10.0.50.12 ansible_user=ubuntu
+bastion ansible_host=10.0.50.10 ansible_user=ubuntu
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+""")
+with open(os.path.join(base_dir, "ansible", "inventory.ini"), "w") as f:
+    f.write(inventory)
+
+site_yml = textwrap.dedent("""\
+---
+- name: Prepare lab hosts for deception cyber range
+  hosts: lab_hosts
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-pip
+        state: present
+
+    - name: Install Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+        state: present
+
+    - name: Install Docker and Docker Compose plugin
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+      register: docker_install
+      ignore_errors: yes
+
+    - name: Ensure user is in docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Create directories for deception artifacts and logs
+      file:
+        path: /opt/deception_lab/{{ item }}
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: '0755'
+      loop:
+        - honeytokens
+        - logs
+        - cowrie
+
+    - name: Install docker-compose (pip fallback)
+      pip:
+        name: docker-compose
+        executable: pip3
+      when: docker_install is failed | default(False)
+""")
+with open(os.path.join(base_dir, "ansible", "site.yml"), "w") as f:
+    f.write(site_yml)
+
+# docker compose
+os.makedirs(os.path.join(base_dir, "docker"), exist_ok=True)
+docker_compose = textwrap.dedent("""\
+version: '3.8'
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.1
+    container_name: es
+    environment:
+      - discovery.type=single-node
+      - \"ES_JAVA_OPTS=-Xms512m -Xmx512m\"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - deception_net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.1
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - \"5601:5601\"
+    networks:
+      - deception_net
+
+  cowrie:
+    image: cowrie/cowrie:latest
+    container_name: cowrie
+    restart: unless-stopped
+    volumes:
+      - ./cowrie/data:/cowrie/data
+    networks:
+      - deception_net
+
+  caldera:
+    image: mitre/caldera:4.3.0
+    container_name: caldera
+    environment:
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=admin
+    ports:
+      - \"8888:8888\"
+    networks:
+      - deception_net
+
+volumes:
+  esdata:
+
+networks:
+  deception_net:
+    driver: bridge
+""")
+with open(os.path.join(base_dir, "docker", "docker-compose.yml"), "w") as f:
+    f.write(docker_compose)
+
+# scripts
+os.makedirs(os.path.join(base_dir, "scripts"), exist_ok=True)
+setup_sh = textwrap.dedent("""\
+#!/bin/bash
+# Simple helper to install ansible & basic tools on control host (Ubuntu/Debian).
+set -euo pipefail
+sudo apt update
+sudo apt install -y software-properties-common
+sudo add-apt-repository --yes --update ppa:ansible/ansible
+sudo apt install -y ansible git python3-pip
+pip3 install --user docker-compose
+echo "Environment ready. Place inventory in ansible/inventory.ini and run: ansible-playbook -i ansible/inventory.ini ansible/site.yml"
+""")
+with open(os.path.join(base_dir, "scripts", "setup_env.sh"), "w") as f:
+    f.write(setup_sh)
+os.chmod(os.path.join(base_dir, "scripts", "setup_env.sh"), 0o755)
+
+# deception_controller
+os.makedirs(os.path.join(base_dir, "deception_controller"), exist_ok=True)
+deception_py = textwrap.dedent("""\
+#!/usr/bin/env python3
+\"\"\"Adaptive Deception Controller (skeleton)
+- Watches Cowrie log directory (or Elasticsearch) for attacker events
+- Deploys or rotates honeytokens on lab hosts via SSH or Ansible
+- Publishes a short audit log for scoring pipelines
+
+IMPORTANT: This is a safe skeleton for educational use. Implement adaptive policies cautiously,
+and only run in isolated lab environments.
+\"\"\"
+
+import os
+import time
+import json
+import logging
+import subprocess
+from datetime import datetime
+
+# Configuration - edit for your lab
+COWRIE_LOG_DIR = '/opt/deception_lab/logs/cowrie'  # or path mounted from cowrie container
+HONEYTOKEN_DIR = '/opt/deception_lab/honeytokens'
+AUDIT_LOG = '/opt/deception_lab/logs/deception_controller_audit.log'
+CHECK_INTERVAL = 5  # seconds
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+
+def scan_cowrie_logs(log_dir):
+    \"\"\"Scan for new Cowrie JSON log files and yield parsed events.\"\"\"
+    if not os.path.isdir(log_dir):
+        logging.warning('Cowrie log dir does not exist: %s', log_dir)
+        return
+    for fname in sorted(os.listdir(log_dir)):
+        if not fname.endswith('.json'):
+            continue
+        path = os.path.join(log_dir, fname)
+        try:
+            with open(path, 'r') as fh:
+                for line in fh:
+                    try:
+                        event = json.loads(line.strip())
+                        yield event
+                    except json.JSONDecodeError:
+                        continue
+        except Exception as e:
+            logging.exception('Failed to read cowrie log %s: %s', path, e)
+
+def place_honeytoken(host, token_content, token_name):
+    \"\"\"Place a honeytoken file on a host.
+    This skeleton uses Ansible ad-hoc command to copy content to /opt/deception_lab/honeytokens on the target host.
+    Adjust for your environment (SSH keys, user, paths).\"\"\"
+    target = host
+    local_tmp = f'/tmp/{token_name}'
+    with open(local_tmp, 'w') as fh:
+        fh.write(token_content)
+    cmd = ['ansible', target, '-m', 'copy', '-a', f'src={local_tmp} dest=/opt/deception_lab/honeytokens/{token_name} mode=0644']
+    logging.info('Placing honeytoken %s on %s', token_name, host)
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        logging.exception('Ansible copy failed: %s', e)
+
+def record_audit(entry):
+    os.makedirs(os.path.dirname(AUDIT_LOG), exist_ok=True)
+    with open(AUDIT_LOG, 'a') as fh:
+        fh.write(json.dumps(entry) + '\\n')
+
+def main_loop():
+    processed = set()
+    logging.info('Starting Deception Controller (skeleton). Check interval: %s sec', CHECK_INTERVAL)
+    while True:
+        for event in scan_cowrie_logs(COWRIE_LOG_DIR):
+            # Use 'session' or 'src_ip' or 'username' fields to identify interactions
+            event_id = event.get('session', '') + '|' + event.get('src_ip', '') + '|' + str(event.get('timestamp', ''))
+            if event_id in processed:
+                continue
+            processed.add(event_id)
+            # Simple adaptive policy:
+            # If attacker attempted to access a decoy filename pattern, rotate a honeytoken to that host
+            src_ip = event.get('src_ip', 'unknown')
+            username = event.get('username', '')
+            cmd = event.get('message', '') or event.get('eventid', '')
+            logging.info('Observed event from %s: %s', src_ip, cmd)
+            # Place a honeytoken with contextual content (do NOT put real credentials)
+            token_name = f'honey_{int(time.time())}.txt'
+            token_content = f'INSTR: Investigate file {token_name} - created by deception controller at {datetime.utcnow().isoformat()}'
+            # For lab safety, target host resolution should map src_ip to lab host inventory names (host1/host2)
+            # Here we choose a conservative policy: place token on both lab hosts via Ansible group 'lab_hosts'
+            place_honeytoken('lab_hosts', token_content, token_name)
+            audit = {
+                'timestamp': datetime.utcnow().isoformat(),
+                'action': 'place_honeytoken',
+                'token': token_name,
+                'src_ip': src_ip,
+                'username': username
+            }
+            record_audit(audit)
+        time.sleep(CHECK_INTERVAL)
+
+if __name__ == '__main__':
+    main_loop()
+""")
+with open(os.path.join(base_dir, "deception_controller", "deception_controller.py"), "w") as f:
+    f.write(deception_py)
+os.chmod(os.path.join(base_dir, "deception_controller", "deception_controller.py"), 0o755)
+
+# scoring
+os.makedirs(os.path.join(base_dir, "scoring"), exist_ok=True)
+scoring_py = textwrap.dedent("""\
+#!/usr/bin/env python3
+\"\"\"Simple scoring pipeline
+- Reads deception controller audit log and cowrie logs (or Elasticsearch export)
+- Computes:
+  - detection accuracy (placeholder calculation)
+  - mean time to detect (MTTD) as time between first attacker event and first detection alert
+This script is intentionally conservative: it expects structured logs and does not parse attack payloads.
+\"\"\"
+
+import os
+import json
+import statistics
+from datetime import datetime
+
+AUDIT_LOG = '/opt/deception_lab/logs/deception_controller_audit.log'  # produced by controller
+COWRIE_LOG_DIR = '/opt/deception_lab/logs/cowrie'
+
+
+def parse_audit(audit_path):
+    events = []
+    if not os.path.exists(audit_path):
+        return events
+    with open(audit_path, 'r') as fh:
+        for line in fh:
+            try:
+                events.append(json.loads(line.strip()))
+            except Exception:
+                continue
+    return events
+
+def parse_cowrie(cowrie_dir):
+    events = []
+    if not os.path.isdir(cowrie_dir):
+        return events
+    for fname in sorted(os.listdir(cowrie_dir)):
+        if not fname.endswith('.json'):
+            continue
+        path = os.path.join(cowrie_dir, fname)
+        with open(path, 'r') as fh:
+            for line in fh:
+                try:
+                    e = json.loads(line.strip())
+                    events.append(e)
+                except Exception:
+                    continue
+    return events
+
+def compute_mttd(cowrie_events, detection_events):
+    # Very conservative: match by src_ip; compute time diff between first attacker event and first detection audit
+    times = []
+    if not cowrie_events or not detection_events:
+        return None
+    first_by_ip = {}
+    for e in cowrie_events:
+        ip = e.get('src_ip')
+        ts = e.get('timestamp')
+        if ip and ts:
+            first_by_ip.setdefault(ip, ts)
+    for d in detection_events:
+        ip = d.get('src_ip')
+        ts = d.get('timestamp')
+        if ip and ts and ip in first_by_ip:
+            try:
+                t1 = datetime.fromisoformat(first_by_ip[ip])
+                t2 = datetime.fromisoformat(ts)
+                delta = (t2 - t1).total_seconds()
+                times.append(delta)
+            except Exception:
+                continue
+    if not times:
+        return None
+    return statistics.mean(times)
+
+def main():
+    audit = parse_audit(AUDIT_LOG)
+    cowrie = parse_cowrie(COWRIE_LOG_DIR)
+    mttd = compute_mttd(cowrie, audit)
+    print('Audit events:', len(audit))
+    print('Cowrie events:', len(cowrie))
+    print('Estimated MTTD (seconds):', mttd)
+
+if __name__ == '__main__':
+    main()
+""")
+with open(os.path.join(base_dir, "scoring", "scoring.py"), "w") as f:
+    f.write(scoring_py)
+os.chmod(os.path.join(base_dir, "scoring", "scoring.py"), 0o755)
+
+# .gitignore
+with open(os.path.join(base_dir, ".gitignore"), "w") as f:
+    f.write("*.pyc\n__pycache__/\n.vscode/\n.env\n")
+
+# create zip
+zip_path = "/mnt/data/deception_cyberlab.zip"
+if os.path.exists(zip_path):
+    os.remove(zip_path)
+shutil.make_archive("/mnt/data/deception_cyberlab", 'zip', base_dir)
+
+print("Created starter repo at:", base_dir)
+print("Zipped repo for download at:", zip_path)
+
+FILE END
+
+FILE START: ./docker/probe_results.csv
+timestamp_iso,target_host,target_port,username,password,result,latency_ms
+2025-11-11T00:54:46.777315Z,127.0.0.1,2222,root,toor,other_error,2
+2025-11-11T00:54:47.781536Z,127.0.0.1,2222,admin,admin,other_error,0
+2025-11-11T00:54:48.782812Z,127.0.0.1,2222,guest,guest,other_error,0
+2025-11-11T00:54:49.783584Z,127.0.0.1,2222,ubuntu,ubuntu,other_error,0
+2025-11-11T00:54:50.784460Z,127.0.0.1,2222,test,test123,other_error,0
+2025-11-11T00:54:51.789683Z,127.0.0.1,2222,oracle,oracle,other_error,0
+2025-11-11T00:54:52.790499Z,127.0.0.1,2222,svcacct,P@ssw0rd!,other_error,0
+2025-11-11T00:54:53.791673Z,127.0.0.1,2222,root,toor,other_error,0
+2025-11-11T00:54:54.796759Z,127.0.0.1,2222,admin,admin,other_error,0
+2025-11-11T00:54:55.797660Z,127.0.0.1,2222,guest,guest,other_error,0
+2025-11-11T00:54:56.800484Z,127.0.0.1,2222,ubuntu,ubuntu,other_error,0
+2025-11-11T00:54:57.801759Z,127.0.0.1,2222,test,test123,other_error,0
+2025-11-11T00:54:58.804599Z,127.0.0.1,2222,oracle,oracle,other_error,0
+2025-11-11T00:54:59.808555Z,127.0.0.1,2222,svcacct,P@ssw0rd!,other_error,0
+2025-11-11T00:55:00.810915Z,127.0.0.1,2222,root,toor,other_error,0
+2025-11-11T00:55:01.811614Z,127.0.0.1,2222,admin,admin,other_error,0
+2025-11-11T00:55:02.813096Z,127.0.0.1,2222,guest,guest,other_error,0
+2025-11-11T00:55:03.818601Z,127.0.0.1,2222,ubuntu,ubuntu,other_error,0
+2025-11-11T00:55:04.823237Z,127.0.0.1,2222,test,test123,other_error,0
+2025-11-11T00:55:05.827837Z,127.0.0.1,2222,oracle,oracle,other_error,0
+2025-11-11T00:55:06.833211Z,127.0.0.1,2222,svcacct,P@ssw0rd!,other_error,0
+2025-11-11T00:55:07.835780Z,127.0.0.1,2222,root,toor,other_error,0
+2025-11-11T00:55:08.840688Z,127.0.0.1,2222,admin,admin,other_error,0
+2025-11-11T00:55:09.841544Z,127.0.0.1,2222,guest,guest,other_error,0
+2025-11-11T00:55:10.842801Z,127.0.0.1,2222,ubuntu,ubuntu,other_error,0
+2025-11-11T00:55:11.847040Z,127.0.0.1,2222,test,test123,other_error,0
+2025-11-11T00:55:12.849736Z,127.0.0.1,2222,oracle,oracle,other_error,0
+2025-11-11T00:55:13.852622Z,127.0.0.1,2222,svcacct,P@ssw0rd!,other_error,0
+2025-11-11T00:55:14.855383Z,127.0.0.1,2222,root,toor,other_error,0
+2025-11-11T00:55:15.857955Z,127.0.0.1,2222,admin,admin,other_error,0
+2025-11-11T00:55:16.861833Z,127.0.0.1,2222,guest,guest,other_error,0
+2025-11-11T00:55:17.865736Z,127.0.0.1,2222,ubuntu,ubuntu,other_error,0
+2025-11-11T00:55:18.869893Z,127.0.0.1,2222,test,test123,other_error,0
+2025-11-11T00:55:19.873358Z,127.0.0.1,2222,oracle,oracle,other_error,0
+2025-11-11T00:55:20.874558Z,127.0.0.1,2222,svcacct,P@ssw0rd!,other_error,0
+2025-11-11T00:55:21.877785Z,127.0.0.1,2222,root,toor,other_error,0
+2025-11-11T00:55:22.881035Z,127.0.0.1,2222,admin,admin,other_error,0
+2025-11-11T00:55:23.884902Z,127.0.0.1,2222,guest,guest,other_error,0
+2025-11-11T00:55:24.889886Z,127.0.0.1,2222,ubuntu,ubuntu,other_error,0
+2025-11-11T00:55:25.890862Z,127.0.0.1,2222,test,test123,other_error,0
+
+
+FILE END
+
+FILE START: ./docker/docker-compose.yml
+services:
+  caldera:
+    image: mitre/caldera:latest
+    container_name: caldera
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    environment:
+      - CALDERA_ADMIN=admin
+      - CALDERA_PASSWORD=admin
+    volumes:
+      - ./caldera-data:/caldera
+
+  cowrie:
+    image: cowrie/cowrie:latest
+    container_name: cowrie
+    restart: unless-stopped
+    ports:
+      - "2222:2222"       # SSH honeypot
+      - "2223:2223"       # Telnet honeypot
+    environment:
+      - COWRIE_USER=cowrie
+      - COWRIE_GROUP=cowrie
+    volumes:
+      - ./cowrie/etc:/cowrie/cowrie-git/etc
+      - ./cowrie/var:/cowrie/cowrie-git/var
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.24
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.24
+    container_name: kibana
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+
+volumes:
+  esdata:
+
+
+FILE END
+
+FILE START: ./docker/tools/run_ssh_probe.py
+#!/usr/bin/env python3
+"""
+run_ssh_probe.py
+
+Simple SSH probe for generating attacker-like events against Cowrie.
+- Attempts SSH logins from a small credential list.
+- Records each attempt to a CSV for later scoring and plotting.
+- Safe for isolated labs. Do not use on production machines.
+
+Usage example:
+  pip3 install paramiko
+  python3 tools/run_ssh_probe.py --host 127.0.0.1 --port 2222 --attempts 50 --out probe_results.csv
+
+Outputs:
+- CSV with columns: timestamp_iso, target_host, target_port, username, password, result, latency_ms
+
+"""
+import argparse
+import csv
+import time
+from datetime import datetime
+import socket
+
+import paramiko
+
+# Default credential list - synthetic only
+DEFAULT_CREDS = [
+    ("root", "toor"),
+    ("admin", "admin"),
+    ("guest", "guest"),
+    ("ubuntu", "ubuntu"),
+    ("test", "test123"),
+    ("oracle", "oracle"),
+    ("svcacct", "P@ssw0rd!"),
+]
+
+def try_ssh(host, port, username, password, timeout=8.0):
+    """
+    Try an SSH connection using Paramiko.
+    Returns tuple: (result_str, latency_ms)
+    result_str: "success", "auth_failed", "conn_refused", "timeout", "other_error"
+    """
+    start = time.time()
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        client.connect(hostname=host, port=port, username=username, password=password,
+                       look_for_keys=False, allow_agent=False, banner_timeout=5.0,
+                       auth_timeout=5.0, timeout=timeout)
+        # if connection succeeds, try a harmless command
+        try:
+            stdin, stdout, stderr = client.exec_command("echo probe-ok", timeout=5.0)
+            _ = stdout.read()
+        except Exception:
+            pass
+        client.close()
+        latency = int((time.time() - start) * 1000)
+        return "success", latency
+    except paramiko.ssh_exception.AuthenticationException:
+        latency = int((time.time() - start) * 1000)
+        return "auth_failed", latency
+    except (paramiko.ssh_exception.SSHException, socket.timeout) as e:
+        latency = int((time.time() - start) * 1000)
+        # Distinguish connection refused vs timeout
+        err = str(e).lower()
+        if "timed out" in err or isinstance(e, socket.timeout):
+            return "timeout", latency
+        return "conn_error", latency
+    except ConnectionRefusedError:
+        latency = int((time.time() - start) * 1000)
+        return "conn_refused", latency
+    except Exception:
+        latency = int((time.time() - start) * 1000)
+        return "other_error", latency
+
+def main():
+    parser = argparse.ArgumentParser(description="SSH probe generator for Cowrie honeypot")
+    parser.add_argument("--host", default="127.0.0.1", help="Target host (Cowrie). Default 127.0.0.1")
+    parser.add_argument("--port", type=int, default=2222, help="Target SSH port. Default 2222 for Cowrie")
+    parser.add_argument("--attempts", type=int, default=30, help="Total login attempts to perform")
+    parser.add_argument("--out", default="probe_results.csv", help="CSV output file")
+    parser.add_argument("--creds-file", default=None, help="Optional file with username:password per line")
+    parser.add_argument("--delay", type=float, default=1.0, help="Seconds between attempts (default 1.0)")
+    args = parser.parse_args()
+
+    creds = list(DEFAULT_CREDS)
+    if args.creds_file:
+        try:
+            with open(args.creds_file, "r") as fh:
+                creds = []
+                for line in fh:
+                    line = line.strip()
+                    if not line or ":" not in line:
+                        continue
+                    u, p = line.split(":", 1)
+                    creds.append((u.strip(), p.strip()))
+        except FileNotFoundError:
+            print("Creds file not found, using defaults")
+
+    # Rotate through credentials
+    total = args.attempts
+    out_path = args.out
+    fieldnames = ["timestamp_iso", "target_host", "target_port", "username", "password", "result", "latency_ms"]
+
+    with open(out_path, "w", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for i in range(total):
+            u, p = creds[i % len(creds)]
+            ts = datetime.utcnow().isoformat() + "Z"
+            result, latency = try_ssh(args.host, args.port, u, p)
+            row = {
+                "timestamp_iso": ts,
+                "target_host": args.host,
+                "target_port": args.port,
+                "username": u,
+                "password": p,
+                "result": result,
+                "latency_ms": latency,
+            }
+            writer.writerow(row)
+            print(f"[{i+1}/{total}] {u}:{p} -> {result} ({latency} ms)")
+            time.sleep(args.delay)
+
+    print("Done. Results written to", out_path)
+
+if __name__ == "__main__":
+    main()
+
+
+FILE END
+
+FILE START: ./ansible/site.yml
+---
+- name: Prepare lab hosts for deception cyber range
+  hosts: lab_hosts
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-pip
+        state: present
+
+    - name: Install Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+        state: present
+
+    - name: Install Docker and container runtime
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+      register: docker_install
+      ignore_errors: yes
+
+    - name: Ensure user is in docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Create directories for deception artifacts and logs
+      file:
+        path: /opt/deception_lab/{{ item }}
+        state: directory
+        owner: "{{ ansible_user }}"
+        mode: '0755'
+      loop:
+        - honeytokens
+        - logs
+        - cowrie
+
+    - name: Install docker-compose via pip (fallback)
+      pip:
+        name: docker-compose
+        executable: pip3
+      when: docker_install is failed | default(False)
+
+
+FILE END
+
+FILE START: ./ansible/inventory.ini
+[lab_hosts]
+host1 ansible_host=10.0.50.11 ansible_user=ubuntu
+host2 ansible_host=10.0.50.12 ansible_user=ubuntu
+bastion ansible_host=10.0.50.10 ansible_user=ubuntu
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+
+
+FILE END
+
+FILE START: ./ansible/docker/docker-compose.yml
+version: '3.8'
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.1
+    container_name: es
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - deception_net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.1
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - deception_net
+
+  cowrie:
+    image: cowrie/cowrie:latest
+    container_name: cowrie
+    restart: unless-stopped
+    volumes:
+      - ./cowrie/data:/cowrie/data
+    networks:
+      - deception_net
+
+  # Caldera placeholder - does not run attack playbooks by itself.
+  caldera:
+    image: mitre/caldera:4.3.0
+    container_name: caldera
+    environment:
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=admin
+    ports:
+      - "8888:8888"
+    networks:
+      - deception_net
+
+volumes:
+  esdata:
+
+networks:
+  deception_net:
+    driver: bridge
+
+
+FILE END
+
+FILE START: ./ansible/docker/untitled
+version: '3.8'
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.1
+    container_name: es
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - deception_net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.1
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - deception_net
+
+  cowrie:
+    image: cowrie/cowrie:latest
+    container_name: cowrie
+    restart: unless-stopped
+    volumes:
+      - ./cowrie/data:/cowrie/data
+    networks:
+      - deception_net
+
+  # Caldera placeholder - does not run attack playbooks by itself.
+  caldera:
+    image: mitre/caldera:4.3.0
+    container_name: caldera
+    environment:
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=admin
+    ports:
+      - "8888:8888"
+    networks:
+      - deception_net
+
+volumes:
+  esdata:
+
+networks:
+  deception_net:
+    driver: bridge
+
+
+FILE END
+
+FILE START: ./scripts/run_ssh_probe.py
+#!/usr/bin/env python3
+"""
+run_ssh_probe.py
+
+Simple SSH probe for generating attacker-like events against Cowrie.
+- Attempts SSH logins from a small credential list.
+- Records each attempt to a CSV for later scoring and plotting.
+- Safe for isolated labs. Do not use on production machines.
+
+Usage example:
+  pip3 install paramiko
+  python3 tools/run_ssh_probe.py --host 127.0.0.1 --port 2222 --attempts 50 --out probe_results.csv
+
+Outputs:
+- CSV with columns: timestamp_iso, target_host, target_port, username, password, result, latency_ms
+
+"""
+import argparse
+import csv
+import time
+from datetime import datetime
+import socket
+
+import paramiko
+
+# Default credential list - synthetic only
+DEFAULT_CREDS = [
+    ("root", "toor"),
+    ("admin", "admin"),
+    ("guest", "guest"),
+    ("ubuntu", "ubuntu"),
+    ("test", "test123"),
+    ("oracle", "oracle"),
+    ("svcacct", "P@ssw0rd!"),
+]
+
+def try_ssh(host, port, username, password, timeout=8.0):
+    """
+    Try an SSH connection using Paramiko.
+    Returns tuple: (result_str, latency_ms)
+    result_str: "success", "auth_failed", "conn_refused", "timeout", "other_error"
+    """
+    start = time.time()
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        client.connect(hostname=host, port=port, username=username, password=password,
+                       look_for_keys=False, allow_agent=False, banner_timeout=5.0,
+                       auth_timeout=5.0, timeout=timeout)
+        # if connection succeeds, try a harmless command
+        try:
+            stdin, stdout, stderr = client.exec_command("echo probe-ok", timeout=5.0)
+            _ = stdout.read()
+        except Exception:
+            pass
+        client.close()
+        latency = int((time.time() - start) * 1000)
+        return "success", latency
+    except paramiko.ssh_exception.AuthenticationException:
+        latency = int((time.time() - start) * 1000)
+        return "auth_failed", latency
+    except (paramiko.ssh_exception.SSHException, socket.timeout) as e:
+        latency = int((time.time() - start) * 1000)
+        # Distinguish connection refused vs timeout
+        err = str(e).lower()
+        if "timed out" in err or isinstance(e, socket.timeout):
+            return "timeout", latency
+        return "conn_error", latency
+    except ConnectionRefusedError:
+        latency = int((time.time() - start) * 1000)
+        return "conn_refused", latency
+    except Exception:
+        latency = int((time.time() - start) * 1000)
+        return "other_error", latency
+
+def main():
+    parser = argparse.ArgumentParser(description="SSH probe generator for Cowrie honeypot")
+    parser.add_argument("--host", default="127.0.0.1", help="Target host (Cowrie). Default 127.0.0.1")
+    parser.add_argument("--port", type=int, default=2222, help="Target SSH port. Default 2222 for Cowrie")
+    parser.add_argument("--attempts", type=int, default=30, help="Total login attempts to perform")
+    parser.add_argument("--out", default="probe_results.csv", help="CSV output file")
+    parser.add_argument("--creds-file", default=None, help="Optional file with username:password per line")
+    parser.add_argument("--delay", type=float, default=1.0, help="Seconds between attempts (default 1.0)")
+    args = parser.parse_args()
+
+    creds = list(DEFAULT_CREDS)
+    if args.creds_file:
+        try:
+            with open(args.creds_file, "r") as fh:
+                creds = []
+                for line in fh:
+                    line = line.strip()
+                    if not line or ":" not in line:
+                        continue
+                    u, p = line.split(":", 1)
+                    creds.append((u.strip(), p.strip()))
+        except FileNotFoundError:
+            print("Creds file not found, using defaults")
+
+    # Rotate through credentials
+    total = args.attempts
+    out_path = args.out
+    fieldnames = ["timestamp_iso", "target_host", "target_port", "username", "password", "result", "latency_ms"]
+
+    with open(out_path, "w", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for i in range(total):
+            u, p = creds[i % len(creds)]
+            ts = datetime.utcnow().isoformat() + "Z"
+            result, latency = try_ssh(args.host, args.port, u, p)
+            row = {
+                "timestamp_iso": ts,
+                "target_host": args.host,
+                "target_port": args.port,
+                "username": u,
+                "password": p,
+                "result": result,
+                "latency_ms": latency,
+            }
+            writer.writerow(row)
+            print(f"[{i+1}/{total}] {u}:{p} -> {result} ({latency} ms)")
+            time.sleep(args.delay)
+
+    print("Done. Results written to", out_path)
+
+if __name__ == "__main__":
+    main()
+
+
+FILE END
+
+FILE START: ./scripts/setup_env.sh
+#!/bin/bash
+# Helper to prepare a control host (Ubuntu/Debian/macOS) with Ansible & essentials.
+# macOS notes: prefer Homebrew. Debian/Ubuntu will use apt.
+set -euo pipefail
+
+OS="$(uname -s)"
+
+if [ "$OS" = "Darwin" ]; then
+  echo "Detected macOS. Using Homebrew / pip fallback..."
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Homebrew not found. Install Homebrew or use 'pip3 install --user ansible'."
+    echo "Visit https://brew.sh to install Homebrew."
+    exit 1
+  fi
+  echo "Installing ansible via brew..."
+  brew update
+  brew install ansible
+else
+  echo "Assuming Linux (Debian/Ubuntu). Installing apt packages..."
+  sudo apt update
+  sudo apt install -y software-properties-common
+  sudo add-apt-repository --yes --update ppa:ansible/ansible
+  sudo apt install -y ansible git python3-pip
+  pip3 install --user docker-compose
+fi
+
+echo ""
+echo "Done. Place your inventory at ansible/inventory.ini and run:"
+echo "  ansible-playbook -i ansible/inventory.ini ansible/site.yml"
+
+
+FILE END
+
+FILE START: ./scripts/untitled
+#!/usr/bin/env python3
+"""
+Simple scoring pipeline
+- Reads deception controller audit log and cowrie logs (or Elasticsearch export)
+- Computes:
+  - Estimated mean time to detect (MTTD)
+  - Counts of honeytoken placements and interactions
+
+Assumptions:
+- Cowrie JSON logs have 'src_ip' and 'timestamp' fields (ISO format)
+- Audit log is produced by deception_controller and contains 'timestamp' and 'src_ip'
+"""
+
+import os
+import json
+import statistics
+from datetime import datetime
+
+BASE_DIR = os.path.expanduser(os.environ.get("DECEPTION_BASE", "~/deception_lab"))
+AUDIT_LOG = os.path.join(BASE_DIR, "logs", "deception_controller_audit.log")
+COWRIE_LOG_DIR = os.path.join(BASE_DIR, "logs", "cowrie")
+
+def parse_audit(audit_path):
+    events = []
+    if not os.path.exists(audit_path):
+        return events
+    with open(audit_path, 'r') as fh:
+        for line in fh:
+            try:
+                events.append(json.loads(line.strip()))
+            except Exception:
+                continue
+    return events
+
+def parse_cowrie(cowrie_dir):
+    events = []
+    if not os.path.isdir(cowrie_dir):
+        return events
+    for fname in sorted(os.listdir(cowrie_dir)):
+        if not fname.endswith('.json'):
+            continue
+        path = os.path.join(cowrie_dir, fname)
+        with open(path, 'r') as fh:
+            for line in fh:
+                try:
+                    e = json.loads(line.strip())
+                    events.append(e)
+                except Exception:
+                    continue
+    return events
+
+def compute_mttd(cowrie_events, detection_events):
+    # Match by src_ip; compute time diff between the first attacker event and first detection action
+    times = []
+    if not cowrie_events or not detection_events:
+        return None
+    first_by_ip = {}
+    for e in cowrie_events:
+        ip = e.get('src_ip')
+        ts = e.get('timestamp')
+        if ip and ts:
+            # Normalize timestamp if numeric
+            try:
+                # If timestamp is numeric (epoch), convert
+                if isinstance(ts, (int, float)):
+                    t_iso = datetime.utcfromtimestamp(ts).isoformat() + "Z"
+                else:
+                    t_iso = ts
+                first_by_ip.setdefault(ip, t_iso)
+            except Exception:
+                continue
+    for d in detection_events:
+        ip = d.get('src_ip')
+        ts = d.get('timestamp')
+        if ip and ts and ip in first_by_ip:
+            try:
+                t1 = datetime.fromisoformat(first_by_ip[ip].replace("Z",""))
+                t2 = datetime.fromisoformat(ts.replace("Z",""))
+                delta = (t2 - t1).total_seconds()
+                times.append(delta)
+            except Exception:
+                continue
+    if not times:
+        return None
+    return statistics.mean(times)
+
+def main():
+    audit = parse_audit(AUDIT_LOG)
+    cowrie = parse_cowrie(COWRIE_LOG_DIR)
+    mttd = compute_mttd(cowrie, audit)
+    print("Audit events:", len(audit))
+    print("Cowrie events:", len(cowrie))
+    print("Estimated MTTD (seconds):", mttd)
+
+if __name__ == "__main__":
+    main()
+
+
+FILE END
+
+FILE START: ./scoring/scoring.py
+#!/usr/bin/env python3
+"""
+Simple scoring pipeline
+- Reads deception controller audit log and cowrie logs (or Elasticsearch export)
+- Computes:
+  - Estimated mean time to detect (MTTD)
+  - Counts of honeytoken placements and interactions
+
+Assumptions:
+- Cowrie JSON logs have 'src_ip' and 'timestamp' fields (ISO format)
+- Audit log is produced by deception_controller and contains 'timestamp' and 'src_ip'
+"""
+
+import os
+import json
+import statistics
+from datetime import datetime
+
+BASE_DIR = os.path.expanduser(os.environ.get("DECEPTION_BASE", "~/deception_lab"))
+AUDIT_LOG = os.path.join(BASE_DIR, "logs", "deception_controller_audit.log")
+COWRIE_LOG_DIR = os.path.join(BASE_DIR, "logs", "cowrie")
+
+def parse_audit(audit_path):
+    events = []
+    if not os.path.exists(audit_path):
+        return events
+    with open(audit_path, 'r') as fh:
+        for line in fh:
+            try:
+                events.append(json.loads(line.strip()))
+            except Exception:
+                continue
+    return events
+
+def parse_cowrie(cowrie_dir):
+    events = []
+    if not os.path.isdir(cowrie_dir):
+        return events
+    for fname in sorted(os.listdir(cowrie_dir)):
+        if not fname.endswith('.json'):
+            continue
+        path = os.path.join(cowrie_dir, fname)
+        with open(path, 'r') as fh:
+            for line in fh:
+                try:
+                    e = json.loads(line.strip())
+                    events.append(e)
+                except Exception:
+                    continue
+    return events
+
+def compute_mttd(cowrie_events, detection_events):
+    # Match by src_ip; compute time diff between the first attacker event and first detection action
+    times = []
+    if not cowrie_events or not detection_events:
+        return None
+    first_by_ip = {}
+    for e in cowrie_events:
+        ip = e.get('src_ip')
+        ts = e.get('timestamp')
+        if ip and ts:
+            # Normalize timestamp if numeric
+            try:
+                # If timestamp is numeric (epoch), convert
+                if isinstance(ts, (int, float)):
+                    t_iso = datetime.utcfromtimestamp(ts).isoformat() + "Z"
+                else:
+                    t_iso = ts
+                first_by_ip.setdefault(ip, t_iso)
+            except Exception:
+                continue
+    for d in detection_events:
+        ip = d.get('src_ip')
+        ts = d.get('timestamp')
+        if ip and ts and ip in first_by_ip:
+            try:
+                t1 = datetime.fromisoformat(first_by_ip[ip].replace("Z",""))
+                t2 = datetime.fromisoformat(ts.replace("Z",""))
+                delta = (t2 - t1).total_seconds()
+                times.append(delta)
+            except Exception:
+                continue
+    if not times:
+        return None
+    return statistics.mean(times)
+
+def main():
+    audit = parse_audit(AUDIT_LOG)
+    cowrie = parse_cowrie(COWRIE_LOG_DIR)
+    mttd = compute_mttd(cowrie, audit)
+    print("Audit events:", len(audit))
+    print("Cowrie events:", len(cowrie))
+    print("Estimated MTTD (seconds):", mttd)
+
+if __name__ == "__main__":
+    main()
+
+
+FILE END
+
+FILE START: ./deception_controller/deception_controller.py
+#!/usr/bin/env python3
+"""
+Adaptive Deception Controller (skeleton)
+- Watches Cowrie log directory (or Elasticsearch) for attacker events
+- Deploys or rotates honeytokens on lab hosts via Ansible
+- Publishes a short audit log for scoring pipelines
+
+Configuration:
+- Optional environment variable DECEPTION_BASE sets base path (default: ~/deception_lab)
+- The controller will write audit logs under BASE/logs and place tokens under BASE/honeytokens
+
+IMPORTANT: Run only in an isolated lab environment. Do not place real credentials in honeytokens.
+"""
+
+import os
+import time
+import json
+import logging
+import subprocess
+from datetime import datetime
+
+# Configurable base directory (use env var DECEPTION_BASE to override)
+BASE_DIR = os.path.expanduser(os.environ.get("DECEPTION_BASE", "~/deception_lab"))
+COWRIE_LOG_DIR = os.path.join(BASE_DIR, "logs", "cowrie")
+HONEYTOKEN_DIR = os.path.join(BASE_DIR, "honeytokens")
+AUDIT_LOG = os.path.join(BASE_DIR, "logs", "deception_controller_audit.log")
+CHECK_INTERVAL = int(os.environ.get("DECEPTION_CHECK_INTERVAL", "5"))  # seconds
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+
+def ensure_directories():
+    os.makedirs(COWRIE_LOG_DIR, exist_ok=True)
+    os.makedirs(HONEYTOKEN_DIR, exist_ok=True)
+    os.makedirs(os.path.dirname(AUDIT_LOG), exist_ok=True)
+
+def scan_cowrie_logs(log_dir):
+    """Scan for new Cowrie JSON log files and yield parsed events."""
+    if not os.path.isdir(log_dir):
+        logging.warning('Cowrie log dir does not exist: %s', log_dir)
+        return
+    for fname in sorted(os.listdir(log_dir)):
+        if not fname.endswith('.json'):
+            continue
+        path = os.path.join(log_dir, fname)
+        try:
+            with open(path, 'r') as fh:
+                for line in fh:
+                    try:
+                        event = json.loads(line.strip())
+                        yield event
+                    except json.JSONDecodeError:
+                        continue
+        except Exception as e:
+            logging.exception('Failed to read cowrie log %s: %s', path, e)
+
+def place_honeytoken(target_group, token_content, token_name):
+    """
+    Place a honeytoken file on target group via Ansible ad-hoc copy.
+    - target_group: Ansible inventory host or group (e.g., 'host1', 'lab_hosts')
+    - token_content: string to write
+    - token_name: filename such as honey_12345.txt
+    """
+    local_tmp = os.path.join("/tmp", token_name)
+    with open(local_tmp, 'w') as fh:
+        fh.write(token_content)
+
+    cmd = ['ansible', target_group, '-m', 'copy', '-a',
+           f"src={local_tmp} dest=/opt/deception_lab/honeytokens/{token_name} mode=0644"]
+    logging.info('Placing honeytoken %s on %s', token_name, target_group)
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        logging.exception('Ansible copy failed: %s', e)
+
+def record_audit(entry):
+    os.makedirs(os.path.dirname(AUDIT_LOG), exist_ok=True)
+    with open(AUDIT_LOG, 'a') as fh:
+        fh.write(json.dumps(entry) + '\n')
+
+def map_srcip_to_target(src_ip):
+    """
+    Conservative default mapping:
+    - If lab hosts are NATed or static IPs, set mapping logic here.
+    - For now, return 'lab_hosts' (group) to place token on all lab hosts.
+    Customize for your inventory.
+    """
+    return "lab_hosts"
+
+def main_loop():
+    ensure_directories()
+    processed = set()
+    logging.info('Starting Deception Controller. Check interval: %s sec', CHECK_INTERVAL)
+    while True:
+        for event in scan_cowrie_logs(COWRIE_LOG_DIR):
+            # Use 'session' or 'src_ip' or 'username' fields to identify interactions
+            src_ip = event.get('src_ip') or event.get('src_ip', 'unknown')
+            session = event.get('session') or ''
+            timestamp = event.get('timestamp') or ''
+            event_id = f"{session}|{src_ip}|{timestamp}"
+            if event_id in processed:
+                continue
+            processed.add(event_id)
+
+            username = event.get('username', '')
+            message = event.get('message', '') or event.get('eventid', '')
+            logging.info('Observed event from %s: %s', src_ip, message)
+
+            # Simple adaptive policy:
+            # Rotate a honeytoken whenever an interactive session or login attempt is observed.
+            token_name = f"honey_{int(time.time())}.txt"
+            token_content = (
+                f"INSTR: Investigate file {token_name}\n"
+                f"Created by deception controller at {datetime.utcnow().isoformat()}Z\n"
+                "NOTE: This file is a decoy. Do not use as a credential.\n"
+            )
+
+            target = map_srcip_to_target(src_ip)
+            place_honeytoken(target, token_content, token_name)
+
+            audit = {
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "action": "place_honeytoken",
+                "token": token_name,
+                "src_ip": src_ip,
+                "username": username,
+                "reason": message
+            }
+            record_audit(audit)
+        time.sleep(CHECK_INTERVAL)
+
+if __name__ == "__main__":
+    main_loop()
+
+
+FILE END
+
+FILE START: ./deception_controller/.DS_Store
+FILE START: ./deception_controller/.DS_Store
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[remote "origin"]
+	url = https://github.com/USERNAME/REPO.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+
+
+FILE END
+
+FILE START: ./.git/HEAD
+ref: refs/heads/main
+
+
+FILE END
+
+FILE START: ./.git/description
+Unnamed repository; edit this file 'description' to name the repository.
+
+
+FILE END
+
+FILE START: ./.git/index
+FILE START: ./.git/index
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/COMMIT_EDITMSG
+first commit
+
+
+FILE END
+
+FILE START: ./.git/objects/66/f2170b2497b60050fb3ce63f3ba6c7e37249a9
+FILE START: ./.git/objects/66/f2170b2497b60050fb3ce63f3ba6c7e37249a9
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/6f/e14dfd48c1f407cfd9bd0de90621cc1334f270
+FILE START: ./.git/objects/6f/e14dfd48c1f407cfd9bd0de90621cc1334f270
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/6f/ab7f991fe6f6cc106040a3b4af241f4e49082d
+FILE START: ./.git/objects/6f/ab7f991fe6f6cc106040a3b4af241f4e49082d
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/9e/3be6f8dc6fadaf528d2c3b19f93aa4071c3783
+FILE START: ./.git/objects/9e/3be6f8dc6fadaf528d2c3b19f93aa4071c3783
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/67/53de5d8d554b8dc1334a3bcc58362438749059
+FILE START: ./.git/objects/67/53de5d8d554b8dc1334a3bcc58362438749059
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/ac/ab9f5f3aee41267a6a169e5be039c0cae5e784
+FILE START: ./.git/objects/ac/ab9f5f3aee41267a6a169e5be039c0cae5e784
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/b3/73f680c5e4ea2c475ccb0c4d7be919dfb9174d
+FILE START: ./.git/objects/b3/73f680c5e4ea2c475ccb0c4d7be919dfb9174d
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/ca/b525f164d295de249f75c58eace9d8654b7817
+FILE START: ./.git/objects/ca/b525f164d295de249f75c58eace9d8654b7817
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/ec/9b0a4085ff1b176327ebdedd4cc12c75b0b5b4
+FILE START: ./.git/objects/ec/9b0a4085ff1b176327ebdedd4cc12c75b0b5b4
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/1a/6981675414ba7e6c2523f3a4813650029e3b9e
+FILE START: ./.git/objects/1a/6981675414ba7e6c2523f3a4813650029e3b9e
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/10/c81b0c9653e1046bb49fbf643ece2ea0786ee7
+FILE START: ./.git/objects/10/c81b0c9653e1046bb49fbf643ece2ea0786ee7
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/44/0dd49ca6c5e37d3ef97ec12ee2924da5258935
+FILE START: ./.git/objects/44/0dd49ca6c5e37d3ef97ec12ee2924da5258935
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/43/ef75fc4fd5e734edd787d25214f7079eb1cc9d
+FILE START: ./.git/objects/43/ef75fc4fd5e734edd787d25214f7079eb1cc9d
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/09/3c0be0af675436f536cc85a55f0150994d1004
+FILE START: ./.git/objects/09/3c0be0af675436f536cc85a55f0150994d1004
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/96/20c2be2835ecef73777b6a40eea10958d143e1
+FILE START: ./.git/objects/96/20c2be2835ecef73777b6a40eea10958d143e1
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/53/b616a4619cf51d65fb40348be18f6de37e5283
+FILE START: ./.git/objects/53/b616a4619cf51d65fb40348be18f6de37e5283
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/01/7a3f7e165e107664c5a88b2c79f71429b61c73
+FILE START: ./.git/objects/01/7a3f7e165e107664c5a88b2c79f71429b61c73
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/99/6c1dfa3b2b228c4acac0533edc49ac2e368ceb
+FILE START: ./.git/objects/99/6c1dfa3b2b228c4acac0533edc49ac2e368ceb
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/a7/65c02ec4ec42e885bc7405d7c8f08843f34a34
+FILE START: ./.git/objects/a7/65c02ec4ec42e885bc7405d7c8f08843f34a34
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/c4/c24305c1870c648f931df3847319bab4de4cbd
+FILE START: ./.git/objects/c4/c24305c1870c648f931df3847319bab4de4cbd
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/objects/e1/758536a72e14f2852cd9ad31f08d8d0218d687
+FILE START: ./.git/objects/e1/758536a72e14f2852cd9ad31f08d8d0218d687
+Could not read this file.
+
+FILE END
+
+FILE START: ./.git/info/exclude
+# git ls-files --others --exclude-from=.git/info/exclude
+# Lines that start with '#' are comments.
+# For a project mostly in C, the following would be a good set of
+# exclude patterns (uncomment them if you want to use them):
+# *.[oa]
+# *~
+
+
+FILE END
+
+FILE START: ./.git/logs/HEAD
+0000000000000000000000000000000000000000 e1758536a72e14f2852cd9ad31f08d8d0218d687 Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761961064 -0400	commit (initial): Initial commit
+e1758536a72e14f2852cd9ad31f08d8d0218d687 0000000000000000000000000000000000000000 Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761961636 -0400	Branch: renamed refs/heads/master to refs/heads/main
+0000000000000000000000000000000000000000 e1758536a72e14f2852cd9ad31f08d8d0218d687 Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761961636 -0400	Branch: renamed refs/heads/master to refs/heads/main
+e1758536a72e14f2852cd9ad31f08d8d0218d687 6fab7f991fe6f6cc106040a3b4af241f4e49082d Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761967096 -0400	commit: first commit
+6fab7f991fe6f6cc106040a3b4af241f4e49082d 0000000000000000000000000000000000000000 Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761967096 -0400	Branch: renamed refs/heads/main to refs/heads/main
+6fab7f991fe6f6cc106040a3b4af241f4e49082d 6fab7f991fe6f6cc106040a3b4af241f4e49082d Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761967096 -0400	Branch: renamed refs/heads/main to refs/heads/main
+
+
+FILE END
+
+FILE START: ./.git/logs/refs/heads/main
+0000000000000000000000000000000000000000 e1758536a72e14f2852cd9ad31f08d8d0218d687 Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761961064 -0400	commit (initial): Initial commit
+e1758536a72e14f2852cd9ad31f08d8d0218d687 e1758536a72e14f2852cd9ad31f08d8d0218d687 Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761961636 -0400	Branch: renamed refs/heads/master to refs/heads/main
+e1758536a72e14f2852cd9ad31f08d8d0218d687 6fab7f991fe6f6cc106040a3b4af241f4e49082d Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761967096 -0400	commit: first commit
+6fab7f991fe6f6cc106040a3b4af241f4e49082d 6fab7f991fe6f6cc106040a3b4af241f4e49082d Darold Kelly <testbuild@Darolds-MacBook-Pro.local> 1761967096 -0400	Branch: renamed refs/heads/main to refs/heads/main
+
+
+FILE END
+
+FILE START: ./.git/hooks/commit-msg.sample
+#!/bin/sh
+#
+# An example hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "commit-msg".
+
+# Uncomment the below to add a Signed-off-by line to the message.
+# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
+# hook is more suited to it.
+#
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+
+# This example catches duplicate Signed-off-by lines.
+
+test "" = "$(grep '^Signed-off-by: ' "$1" |
+	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
+	echo >&2 Duplicate Signed-off-by lines.
+	exit 1
+}
+
+
+FILE END
+
+FILE START: ./.git/hooks/pre-rebase.sample
+#!/bin/sh
+#
+# Copyright (c) 2006, 2008 Junio C Hamano
+#
+# The "pre-rebase" hook is run just before "git rebase" starts doing
+# its job, and can prevent the command from running by exiting with
+# non-zero status.
+#
+# The hook is called with the following parameters:
+#
+# $1 -- the upstream the series was forked from.
+# $2 -- the branch being rebased (or empty when rebasing the current branch).
+#
+# This sample shows how to prevent topic branches that are already
+# merged to 'next' branch from getting rebased, because allowing it
+# would result in rebasing already published history.
+
+publish=next
+basebranch="$1"
+if test "$#" = 2
+then
+	topic="refs/heads/$2"
+else
+	topic=`git symbolic-ref HEAD` ||
+	exit 0 ;# we do not interrupt rebasing detached HEAD
+fi
+
+case "$topic" in
+refs/heads/??/*)
+	;;
+*)
+	exit 0 ;# we do not interrupt others.
+	;;
+esac
+
+# Now we are dealing with a topic branch being rebased
+# on top of master.  Is it OK to rebase it?
+
+# Does the topic really exist?
+git show-ref -q "$topic" || {
+	echo >&2 "No such branch $topic"
+	exit 1
+}
+
+# Is topic fully merged to master?
+not_in_master=`git rev-list --pretty=oneline ^master "$topic"`
+if test -z "$not_in_master"
+then
+	echo >&2 "$topic is fully merged to master; better remove it."
+	exit 1 ;# we could allow it, but there is no point.
+fi
+
+# Is topic ever merged to next?  If so you should not be rebasing it.
+only_next_1=`git rev-list ^master "^$topic" ${publish} | sort`
+only_next_2=`git rev-list ^master           ${publish} | sort`
+if test "$only_next_1" = "$only_next_2"
+then
+	not_in_topic=`git rev-list "^$topic" master`
+	if test -z "$not_in_topic"
+	then
+		echo >&2 "$topic is already up to date with master"
+		exit 1 ;# we could allow it, but there is no point.
+	else
+		exit 0
+	fi
+else
+	not_in_next=`git rev-list --pretty=oneline ^${publish} "$topic"`
+	/usr/bin/perl -e '
+		my $topic = $ARGV[0];
+		my $msg = "* $topic has commits already merged to public branch:\n";
+		my (%not_in_next) = map {
+			/^([0-9a-f]+) /;
+			($1 => 1);
+		} split(/\n/, $ARGV[1]);
+		for my $elem (map {
+				/^([0-9a-f]+) (.*)$/;
+				[$1 => $2];
+			} split(/\n/, $ARGV[2])) {
+			if (!exists $not_in_next{$elem->[0]}) {
+				if ($msg) {
+					print STDERR $msg;
+					undef $msg;
+				}
+				print STDERR " $elem->[1]\n";
+			}
+		}
+	' "$topic" "$not_in_next" "$not_in_master"
+	exit 1
+fi
+
+<<\DOC_END
+
+This sample hook safeguards topic branches that have been
+published from being rewound.
+
+The workflow assumed here is:
+
+ * Once a topic branch forks from "master", "master" is never
+   merged into it again (either directly or indirectly).
+
+ * Once a topic branch is fully cooked and merged into "master",
+   it is deleted.  If you need to build on top of it to correct
+   earlier mistakes, a new topic branch is created by forking at
+   the tip of the "master".  This is not strictly necessary, but
+   it makes it easier to keep your history simple.
+
+ * Whenever you need to test or publish your changes to topic
+   branches, merge them into "next" branch.
+
+The script, being an example, hardcodes the publish branch name
+to be "next", but it is trivial to make it configurable via
+$GIT_DIR/config mechanism.
+
+With this workflow, you would want to know:
+
+(1) ... if a topic branch has ever been merged to "next".  Young
+    topic branches can have stupid mistakes you would rather
+    clean up before publishing, and things that have not been
+    merged into other branches can be easily rebased without
+    affecting other people.  But once it is published, you would
+    not want to rewind it.
+
+(2) ... if a topic branch has been fully merged to "master".
+    Then you can delete it.  More importantly, you should not
+    build on top of it -- other people may already want to
+    change things related to the topic as patches against your
+    "master", so if you need further changes, it is better to
+    fork the topic (perhaps with the same name) afresh from the
+    tip of "master".
+
+Let's look at this example:
+
+		   o---o---o---o---o---o---o---o---o---o "next"
+		  /       /           /           /
+		 /   a---a---b A     /           /
+		/   /               /           /
+	       /   /   c---c---c---c B         /
+	      /   /   /             \         /
+	     /   /   /   b---b C     \       /
+	    /   /   /   /             \     /
+    ---o---o---o---o---o---o---o---o---o---o---o "master"
+
+
+A, B and C are topic branches.
+
+ * A has one fix since it was merged up to "next".
+
+ * B has finished.  It has been fully merged up to "master" and "next",
+   and is ready to be deleted.
+
+ * C has not merged to "next" at all.
+
+We would want to allow C to be rebased, refuse A, and encourage
+B to be deleted.
+
+To compute (1):
+
+	git rev-list ^master ^topic next
+	git rev-list ^master        next
+
+	if these match, topic has not merged in next at all.
+
+To compute (2):
+
+	git rev-list master..topic
+
+	if this is empty, it is fully merged to "master".
+
+DOC_END
+
+
+FILE END
+
+FILE START: ./.git/hooks/sendemail-validate.sample
+#!/bin/sh
+
+# An example hook script to validate a patch (and/or patch series) before
+# sending it via email.
+#
+# The hook should exit with non-zero status after issuing an appropriate
+# message if it wants to prevent the email(s) from being sent.
+#
+# To enable this hook, rename this file to "sendemail-validate".
+#
+# By default, it will only check that the patch(es) can be applied on top of
+# the default upstream branch without conflicts in a secondary worktree. After
+# validation (successful or not) of the last patch of a series, the worktree
+# will be deleted.
+#
+# The following config variables can be set to change the default remote and
+# remote ref that are used to apply the patches against:
+#
+#   sendemail.validateRemote (default: origin)
+#   sendemail.validateRemoteRef (default: HEAD)
+#
+# Replace the TODO placeholders with appropriate checks according to your
+# needs.
+
+validate_cover_letter () {
+	file="$1"
+	# TODO: Replace with appropriate checks (e.g. spell checking).
+	true
+}
+
+validate_patch () {
+	file="$1"
+	# Ensure that the patch applies without conflicts.
+	git am -3 "$file" || return
+	# TODO: Replace with appropriate checks for this patch
+	# (e.g. checkpatch.pl).
+	true
+}
+
+validate_series () {
+	# TODO: Replace with appropriate checks for the whole series
+	# (e.g. quick build, coding style checks, etc.).
+	true
+}
+
+# main -------------------------------------------------------------------------
+
+if test "$GIT_SENDEMAIL_FILE_COUNTER" = 1
+then
+	remote=$(git config --default origin --get sendemail.validateRemote) &&
+	ref=$(git config --default HEAD --get sendemail.validateRemoteRef) &&
+	worktree=$(mktemp --tmpdir -d sendemail-validate.XXXXXXX) &&
+	git worktree add -fd --checkout "$worktree" "refs/remotes/$remote/$ref" &&
+	git config --replace-all sendemail.validateWorktree "$worktree"
+else
+	worktree=$(git config --get sendemail.validateWorktree)
+fi || {
+	echo "sendemail-validate: error: failed to prepare worktree" >&2
+	exit 1
+}
+
+unset GIT_DIR GIT_WORK_TREE
+cd "$worktree" &&
+
+if grep -q "^diff --git " "$1"
+then
+	validate_patch "$1"
+else
+	validate_cover_letter "$1"
+fi &&
+
+if test "$GIT_SENDEMAIL_FILE_COUNTER" = "$GIT_SENDEMAIL_FILE_TOTAL"
+then
+	git config --unset-all sendemail.validateWorktree &&
+	trap 'git worktree remove -ff "$worktree"' EXIT &&
+	validate_series
+fi
+
+
+FILE END
+
+FILE START: ./.git/hooks/pre-commit.sample
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=$(git hash-object -t tree /dev/null)
+fi
+
+# If you want to allow non-ASCII filenames set this variable to true.
+allownonascii=$(git config --type=bool hooks.allownonascii)
+
+# Redirect output to stderr.
+exec 1>&2
+
+# Cross platform projects tend to avoid non-ASCII filenames; prevent
+# them from being added to the repository. We exploit the fact that the
+# printable range starts at the space character and ends with tilde.
+if [ "$allownonascii" != "true" ] &&
+	# Note that the use of brackets around a tr range is ok here, (it's
+	# even required, for portability to Solaris 10's /usr/bin/tr), since
+	# the square bracket bytes happen to fall in the designated range.
+	test $(git diff-index --cached --name-only --diff-filter=A -z $against |
+	  LC_ALL=C tr -d '[ -~]\0' | wc -c) != 0
+then
+	cat <<\EOF
+Error: Attempt to add a non-ASCII file name.
+
+This can cause problems if you want to work with people on other platforms.
+
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+
+  git config hooks.allownonascii true
+EOF
+	exit 1
+fi
+
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff-index --check --cached $against --
+
+
+FILE END
+
+FILE START: ./.git/hooks/applypatch-msg.sample
+#!/bin/sh
+#
+# An example hook script to check the commit log message taken by
+# applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.  The hook is
+# allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "applypatch-msg".
+
+. git-sh-setup
+commitmsg="$(git rev-parse --git-path hooks/commit-msg)"
+test -x "$commitmsg" && exec "$commitmsg" ${1+"$@"}
+:
+
+
+FILE END
+
+FILE START: ./.git/hooks/fsmonitor-watchman.sample
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use IPC::Open2;
+
+# An example hook script to integrate Watchman
+# (https://facebook.github.io/watchman/) with git to speed up detecting
+# new and modified files.
+#
+# The hook is passed a version (currently 2) and last update token
+# formatted as a string and outputs to stdout a new update token and
+# all files that have been modified since the update token. Paths must
+# be relative to the root of the working tree and separated by a single NUL.
+#
+# To enable this hook, rename this file to "query-watchman" and set
+# 'git config core.fsmonitor .git/hooks/query-watchman'
+#
+my ($version, $last_update_token) = @ARGV;
+
+# Uncomment for debugging
+# print STDERR "$0 $version $last_update_token\n";
+
+# Check the hook interface version
+if ($version ne 2) {
+	die "Unsupported query-fsmonitor hook version '$version'.\n" .
+	    "Falling back to scanning...\n";
+}
+
+my $git_work_tree = get_working_dir();
+
+my $retry = 1;
+
+my $json_pkg;
+eval {
+	require JSON::XS;
+	$json_pkg = "JSON::XS";
+	1;
+} or do {
+	require JSON::PP;
+	$json_pkg = "JSON::PP";
+};
+
+launch_watchman();
+
+sub launch_watchman {
+	my $o = watchman_query();
+	if (is_work_tree_watched($o)) {
+		output_result($o->{clock}, @{$o->{files}});
+	}
+}
+
+sub output_result {
+	my ($clockid, @files) = @_;
+
+	# Uncomment for debugging watchman output
+	# open (my $fh, ">", ".git/watchman-output.out");
+	# binmode $fh, ":utf8";
+	# print $fh "$clockid\n@files\n";
+	# close $fh;
+
+	binmode STDOUT, ":utf8";
+	print $clockid;
+	print "\0";
+	local $, = "\0";
+	print @files;
+}
+
+sub watchman_clock {
+	my $response = qx/watchman clock "$git_work_tree"/;
+	die "Failed to get clock id on '$git_work_tree'.\n" .
+		"Falling back to scanning...\n" if $? != 0;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub watchman_query {
+	my $pid = open2(\*CHLD_OUT, \*CHLD_IN, 'watchman -j --no-pretty')
+	or die "open2() failed: $!\n" .
+	"Falling back to scanning...\n";
+
+	# In the query expression below we're asking for names of files that
+	# changed since $last_update_token but not from the .git folder.
+	#
+	# To accomplish this, we're using the "since" generator to use the
+	# recency index to select candidate nodes and "fields" to limit the
+	# output to file names only. Then we're using the "expression" term to
+	# further constrain the results.
+	my $last_update_line = "";
+	if (substr($last_update_token, 0, 1) eq "c") {
+		$last_update_token = "\"$last_update_token\"";
+		$last_update_line = qq[\n"since": $last_update_token,];
+	}
+	my $query = <<"	END";
+		["query", "$git_work_tree", {$last_update_line
+			"fields": ["name"],
+			"expression": ["not", ["dirname", ".git"]]
+		}]
+	END
+
+	# Uncomment for debugging the watchman query
+	# open (my $fh, ">", ".git/watchman-query.json");
+	# print $fh $query;
+	# close $fh;
+
+	print CHLD_IN $query;
+	close CHLD_IN;
+	my $response = do {local $/; <CHLD_OUT>};
+
+	# Uncomment for debugging the watch response
+	# open ($fh, ">", ".git/watchman-response.json");
+	# print $fh $response;
+	# close $fh;
+
+	die "Watchman: command returned no output.\n" .
+	"Falling back to scanning...\n" if $response eq "";
+	die "Watchman: command returned invalid output: $response\n" .
+	"Falling back to scanning...\n" unless $response =~ /^\{/;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub is_work_tree_watched {
+	my ($output) = @_;
+	my $error = $output->{error};
+	if ($retry > 0 and $error and $error =~ m/unable to resolve root .* directory (.*) is not watched/) {
+		$retry--;
+		my $response = qx/watchman watch "$git_work_tree"/;
+		die "Failed to make watchman watch '$git_work_tree'.\n" .
+		    "Falling back to scanning...\n" if $? != 0;
+		$output = $json_pkg->new->utf8->decode($response);
+		$error = $output->{error};
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		# Uncomment for debugging watchman output
+		# open (my $fh, ">", ".git/watchman-output.out");
+		# close $fh;
+
+		# Watchman will always return all files on the first query so
+		# return the fast "everything is dirty" flag to git and do the
+		# Watchman query just to get it over with now so we won't pay
+		# the cost in git to look up each individual file.
+		my $o = watchman_clock();
+		$error = $output->{error};
+
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		output_result($o->{clock}, ("/"));
+		$last_update_token = $o->{clock};
+
+		eval { launch_watchman() };
+		return 0;
+	}
+
+	die "Watchman: $error.\n" .
+	"Falling back to scanning...\n" if $error;
+
+	return 1;
+}
+
+sub get_working_dir {
+	my $working_dir;
+	if ($^O =~ 'msys' || $^O =~ 'cygwin') {
+		$working_dir = Win32::GetCwd();
+		$working_dir =~ tr/\\/\//;
+	} else {
+		require Cwd;
+		$working_dir = Cwd::cwd();
+	}
+
+	return $working_dir;
+}
+
+
+FILE END
+
+FILE START: ./.git/hooks/pre-receive.sample
+#!/bin/sh
+#
+# An example hook script to make use of push options.
+# The example simply echoes all push options that start with 'echoback='
+# and rejects all pushes when the "reject" push option is used.
+#
+# To enable this hook, rename this file to "pre-receive".
+
+if test -n "$GIT_PUSH_OPTION_COUNT"
+then
+	i=0
+	while test "$i" -lt "$GIT_PUSH_OPTION_COUNT"
+	do
+		eval "value=\$GIT_PUSH_OPTION_$i"
+		case "$value" in
+		echoback=*)
+			echo "echo from the pre-receive-hook: ${value#*=}" >&2
+			;;
+		reject)
+			exit 1
+		esac
+		i=$((i + 1))
+	done
+fi
+
+
+FILE END
+
+FILE START: ./.git/hooks/prepare-commit-msg.sample
+#!/bin/sh
+#
+# An example hook script to prepare the commit log message.
+# Called by "git commit" with the name of the file that has the
+# commit message, followed by the description of the commit
+# message's source.  The hook's purpose is to edit the commit
+# message file.  If the hook fails with a non-zero status,
+# the commit is aborted.
+#
+# To enable this hook, rename this file to "prepare-commit-msg".
+
+# This hook includes three examples. The first one removes the
+# "# Please enter the commit message..." help message.
+#
+# The second includes the output of "git diff --name-status -r"
+# into the message, just before the "git status" output.  It is
+# commented because it doesn't cope with --amend or with squashed
+# commits.
+#
+# The third example adds a Signed-off-by line to the message, that can
+# still be edited.  This is rarely a good idea.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+/usr/bin/perl -i.bak -ne 'print unless(m/^. Please enter the commit message/..m/^#$/)' "$COMMIT_MSG_FILE"
+
+# case "$COMMIT_SOURCE,$SHA1" in
+#  ,|template,)
+#    /usr/bin/perl -i.bak -pe '
+#       print "\n" . `git diff --cached --name-status -r`
+# 	 if /^#/ && $first++ == 0' "$COMMIT_MSG_FILE" ;;
+#  *) ;;
+# esac
+
+# SOB=$(git var GIT_COMMITTER_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# git interpret-trailers --in-place --trailer "$SOB" "$COMMIT_MSG_FILE"
+# if test -z "$COMMIT_SOURCE"
+# then
+#   /usr/bin/perl -i.bak -pe 'print "\n" if !$first_line++' "$COMMIT_MSG_FILE"
+# fi
+
+
+FILE END
+
+FILE START: ./.git/hooks/post-update.sample
+#!/bin/sh
+#
+# An example hook script to prepare a packed repository for use over
+# dumb transports.
+#
+# To enable this hook, rename this file to "post-update".
+
+exec git update-server-info
+
+
+FILE END
+
+FILE START: ./.git/hooks/pre-merge-commit.sample
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git merge" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message to
+# stderr if it wants to stop the merge commit.
+#
+# To enable this hook, rename this file to "pre-merge-commit".
+
+. git-sh-setup
+test -x "$GIT_DIR/hooks/pre-commit" &&
+        exec "$GIT_DIR/hooks/pre-commit"
+:
+
+
+FILE END
+
+FILE START: ./.git/hooks/pre-applypatch.sample
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed
+# by applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-applypatch".
+
+. git-sh-setup
+precommit="$(git rev-parse --git-path hooks/pre-commit)"
+test -x "$precommit" && exec "$precommit" ${1+"$@"}
+:
+
+
+FILE END
+
+FILE START: ./.git/hooks/pre-push.sample
+#!/bin/sh
+
+# An example hook script to verify what is about to be pushed.  Called by "git
+# push" after it has checked the remote status, but before anything has been
+# pushed.  If this script exits with a non-zero status nothing will be pushed.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local oid> <remote ref> <remote oid>
+#
+# This sample shows how to prevent push of commits where the log message starts
+# with "WIP" (work in progress).
+
+remote="$1"
+url="$2"
+
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+
+while read local_ref local_oid remote_ref remote_oid
+do
+	if test "$local_oid" = "$zero"
+	then
+		# Handle delete
+		:
+	else
+		if test "$remote_oid" = "$zero"
+		then
+			# New branch, examine all commits
+			range="$local_oid"
+		else
+			# Update to existing branch, examine new commits
+			range="$remote_oid..$local_oid"
+		fi
+
+		# Check for WIP commit
+		commit=$(git rev-list -n 1 --grep '^WIP' "$range")
+		if test -n "$commit"
+		then
+			echo >&2 "Found WIP commit in $local_ref, not pushing"
+			exit 1
+		fi
+	fi
+done
+
+exit 0
+
+
+FILE END
+
+FILE START: ./.git/hooks/update.sample
+#!/bin/sh
+#
+# An example hook script to block unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
+
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
+
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
+
+# --- Config
+allowunannotated=$(git config --type=bool hooks.allowunannotated)
+allowdeletebranch=$(git config --type=bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --type=bool hooks.denycreatebranch)
+allowdeletetag=$(git config --type=bool hooks.allowdeletetag)
+allowmodifytag=$(git config --type=bool hooks.allowmodifytag)
+
+# check for no description
+projectdesc=$(sed -e '1q' "$GIT_DIR/description")
+case "$projectdesc" in
+"Unnamed repository"* | "")
+	echo "*** Project description file hasn't been set" >&2
+	exit 1
+	;;
+esac
+
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
+
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
+
+# --- Finished
+exit 0
+
+
+FILE END
+
+FILE START: ./.git/hooks/push-to-checkout.sample
+#!/bin/sh
+
+# An example hook script to update a checked-out tree on a git push.
+#
+# This hook is invoked by git-receive-pack(1) when it reacts to git
+# push and updates reference(s) in its repository, and when the push
+# tries to update the branch that is currently checked out and the
+# receive.denyCurrentBranch configuration variable is set to
+# updateInstead.
+#
+# By default, such a push is refused if the working tree and the index
+# of the remote repository has any difference from the currently
+# checked out commit; when both the working tree and the index match
+# the current commit, they are updated to match the newly pushed tip
+# of the branch. This hook is to be used to override the default
+# behaviour; however the code below reimplements the default behaviour
+# as a starting point for convenient modification.
+#
+# The hook receives the commit with which the tip of the current
+# branch is going to be updated:
+commit=$1
+
+# It can exit with a non-zero status to refuse the push (when it does
+# so, it must not modify the index or the working tree).
+die () {
+	echo >&2 "$*"
+	exit 1
+}
+
+# Or it can make any necessary changes to the working tree and to the
+# index to bring them to the desired state when the tip of the current
+# branch is updated to the new commit, and exit with a zero status.
+#
+# For example, the hook can simply run git read-tree -u -m HEAD "$1"
+# in order to emulate git fetch that is run in the reverse direction
+# with git push, as the two-tree form of git read-tree -u -m is
+# essentially the same as git switch or git checkout that switches
+# branches while keeping the local changes in the working tree that do
+# not interfere with the difference between the branches.
+
+# The below is a more-or-less exact translation to shell of the C code
+# for the default behaviour for git's push-to-checkout hook defined in
+# the push_to_deploy() function in builtin/receive-pack.c.
+#
+# Note that the hook will be executed from the repository directory,
+# not from the working tree, so if you want to perform operations on
+# the working tree, you will have to adapt your code accordingly, e.g.
+# by adding "cd .." or using relative paths.
+
+if ! git update-index -q --ignore-submodules --refresh
+then
+	die "Up-to-date check failed"
+fi
+
+if ! git diff-files --quiet --ignore-submodules --
+then
+	die "Working directory has unstaged changes"
+fi
+
+# This is a rough translation of:
+#
+#   head_has_history() ? "HEAD" : EMPTY_TREE_SHA1_HEX
+if git cat-file -e HEAD 2>/dev/null
+then
+	head=HEAD
+else
+	head=$(git hash-object -t tree --stdin </dev/null)
+fi
+
+if ! git diff-index --quiet --cached --ignore-submodules $head --
+then
+	die "Working directory has staged changes"
+fi
+
+if ! git read-tree -u -m "$commit"
+then
+	die "Could not update working tree to new HEAD"
+fi
+
+
+FILE END
+
+FILE START: ./.git/refs/heads/main
+6fab7f991fe6f6cc106040a3b4af241f4e49082d
+
+
+FILE END
+
