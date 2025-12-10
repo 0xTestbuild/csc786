@@ -1,0 +1,218 @@
+[
+  {
+    "timestamp": "2025-12-10T00:31:32.493102",
+    "attempt": 1,
+    "target": "192.168.53.5:2222",
+    "username": "administrator",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:31:35.404302",
+    "attempt": 2,
+    "target": "192.168.53.5:2222",
+    "username": "ubuntu",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:31:37.716918",
+    "attempt": 3,
+    "target": "192.168.53.5:2222",
+    "username": "guest",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:31:41.055259",
+    "attempt": 4,
+    "target": "192.168.53.5:2222",
+    "username": "test",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:31:42.680211",
+    "attempt": 5,
+    "target": "192.168.53.5:2222",
+    "username": "user",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:31:44.534794",
+    "attempt": 6,
+    "target": "192.168.53.5:2222",
+    "username": "guest",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:31:47.558739",
+    "attempt": 7,
+    "target": "192.168.53.5:2222",
+    "username": "oracle",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:31:49.466895",
+    "attempt": 8,
+    "target": "192.168.53.5:2222",
+    "username": "oracle",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:31:51.327925",
+    "attempt": 9,
+    "target": "192.168.53.5:2222",
+    "username": "oracle",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:31:53.665405",
+    "attempt": 10,
+    "target": "192.168.53.5:2222",
+    "username": "root",
+    "success": true,
+    "response_time": 0.009063005447387695
+  },
+  {
+    "timestamp": "2025-12-10T00:31:55.399054",
+    "attempt": 11,
+    "target": "192.168.53.5:2222",
+    "username": "root",
+    "success": true,
+    "response_time": 0.009804964065551758
+  },
+  {
+    "timestamp": "2025-12-10T00:31:57.121473",
+    "attempt": 12,
+    "target": "192.168.53.5:2222",
+    "username": "postgres",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:00.413247",
+    "attempt": 13,
+    "target": "192.168.53.5:2222",
+    "username": "postgres",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:04.208360",
+    "attempt": 14,
+    "target": "192.168.53.5:2222",
+    "username": "test",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:08.060943",
+    "attempt": 15,
+    "target": "192.168.53.5:2222",
+    "username": "ubuntu",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:11.842639",
+    "attempt": 16,
+    "target": "192.168.53.5:2222",
+    "username": "oracle",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:14.840892",
+    "attempt": 17,
+    "target": "192.168.53.5:2222",
+    "username": "oracle",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:16.859817",
+    "attempt": 18,
+    "target": "192.168.53.5:2222",
+    "username": "oracle",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:20.327550",
+    "attempt": 19,
+    "target": "192.168.53.5:2222",
+    "username": "guest",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:23.848717",
+    "attempt": 20,
+    "target": "192.168.53.5:2222",
+    "username": "user",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:26.552387",
+    "attempt": 21,
+    "target": "192.168.53.5:2222",
+    "username": "pi",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:29.094304",
+    "attempt": 22,
+    "target": "192.168.53.5:2222",
+    "username": "ubuntu",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:32.359326",
+    "attempt": 23,
+    "target": "192.168.53.5:2222",
+    "username": "test",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:35.762100",
+    "attempt": 24,
+    "target": "192.168.53.5:2222",
+    "username": "pi",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:37.526215",
+    "attempt": 25,
+    "target": "192.168.53.5:2222",
+    "username": "postgres",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:39.237835",
+    "attempt": 26,
+    "target": "192.168.53.5:2222",
+    "username": "oracle",
+    "success": false,
+    "response_time": 0
+  },
+  {
+    "timestamp": "2025-12-10T00:32:41.585064",
+    "attempt": 27,
+    "target": "192.168.53.5:2222",
+    "username": "user",
+    "success": false,
+    "response_time": 0
+  }
+]

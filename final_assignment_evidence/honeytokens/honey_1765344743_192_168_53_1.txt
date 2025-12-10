@@ -1,0 +1,6 @@
+DECEPTION TOKEN - CSC786 RESEARCH
+Timestamp: 2025-12-10T00:32:23.078658
+Attacker IP: 192.168.53.1
+Username: user
+Token ID: honey_1765344743_192_168_53_1.txt
+Purpose: Academic research - Do not use
