@@ -1,0 +1,1 @@
+159 /home/osboxes/deception_lab/cowrie_data/cowrie.json

@@ -1,0 +1,4 @@
+CONTAINER ID   IMAGE                   COMMAND                  CREATED         STATUS         PORTS                                                             NAMES
+b0736805f1d9   cowrie/cowrie:latest    "/cowrie/cowrie-env/…"   9 minutes ago   Up 9 minutes   0.0.0.0:2222-2223->2222-2223/tcp, [::]:2222-2223->2222-2223/tcp   cowrie
+7aa2b85933b4   kibana:7.17.24          "/bin/tini -- /usr/l…"   9 minutes ago   Up 9 minutes   0.0.0.0:5601->5601/tcp, [::]:5601->5601/tcp                       kibana
+3da137976e5c   elasticsearch:7.17.24   "/bin/tini -- /usr/l…"   9 minutes ago   Up 9 minutes   0.0.0.0:9200->9200/tcp, [::]:9200->9200/tcp, 9300/tcp             elasticsearch

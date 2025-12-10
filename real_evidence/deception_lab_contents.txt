@@ -1,0 +1,13 @@
+total 96
+drwxr-xr-x  7 osboxes osboxes  4096 Dec 10 00:28 .
+drwxr-x--- 18 osboxes osboxes  4096 Dec  9 23:27 ..
+-rw-rw-r--  1 osboxes osboxes 17347 Dec 10 00:32 controller_output.log
+-rw-rw-r--  1 osboxes osboxes   179 Dec  9 23:31 cowrie.cfg
+drwxrwxrwx  2 osboxes osboxes  4096 Dec 10 00:27 cowrie_data
+-rwxrwxr-x  1 osboxes osboxes  4320 Dec  9 23:39 deception_controller.py
+drwxr-xr-x  2 osboxes root     4096 Dec  9 23:28 docker
+drwxrwxr-x  3 osboxes osboxes  4096 Dec 10 00:27 elasticsearch_data
+-rw-rw-r--  1 osboxes osboxes 12615 Dec  9 23:58 generate_quantitative_results.py
+drwxr-xr-x  2 osboxes root    12288 Dec 10 00:40 honeytokens
+drwxr-xr-x  2 osboxes root     4096 Dec 10 00:33 logs
+-rwxrwxr-x  1 osboxes osboxes  5796 Dec 10 00:28 real_deception_controller.py

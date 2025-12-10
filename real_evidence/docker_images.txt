@@ -1,0 +1,6 @@
+REPOSITORY                                      TAG       IMAGE ID       CREATED         SIZE
+cowrie/cowrie                                   latest    326aedf0b78b   2 days ago      308MB
+elasticsearch                                   7.17.24   fcd33427892e   15 months ago   634MB
+kibana                                          7.17.24   a483dc876acd   15 months ago   865MB
+docker.elastic.co/elasticsearch/elasticsearch   7.17.24   1e3e41102ef9   15 months ago   634MB
+docker.elastic.co/kibana/kibana                 7.17.24   eb9ee80425c7   15 months ago   865MB
